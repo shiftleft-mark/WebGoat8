@@ -1,6 +1,6 @@
 # This workflow integrates ShiftLeft with GitHub
 # Visit https://docs.shiftleft.io for help
-name: Analyze with ShiftLeft
+name: Analyze-with-ShiftLeft
 
 on:
   pull_request:
