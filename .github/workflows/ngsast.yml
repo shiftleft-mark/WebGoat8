@@ -7,7 +7,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  NextGen-Static-Analysis:
+#javascript scan
+  NextGen-Static-Analysis-Javascript:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -25,5 +26,31 @@ jobs:
       env:
         SHIFTLEFT_ORG_ID: ${{ secrets.SHIFTLEFT_ORG_ID }}
         SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+  #java scan with container
+  NextGen-Static-Analysis-Java:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    # We are building this application with Java 11
+    - name: Setup Java JDK
+      uses: actions/setup-java@v1.4.3
+      with:
+        java-version: 11.0.x
+    - name: Package with maven
+      run: mvn compile package
+    - name: Download ShiftLeft CLI
+      run: |
+        curl https://cdn.shiftleft.io/download/sl > ${GITHUB_WORKSPACE}/sl && chmod a+rx ${GITHUB_WORKSPACE}/sl
+    # ShiftLeft requires Java 1.8. Post the package step override the version
+    - name: Setup Java JDK
+      uses: actions/setup-java@v1.4.3
+      with:
+        java-version: 1.8
+    - name: NextGen Static Analysis
+      run: ${GITHUB_WORKSPACE}/sl analyze --wait --app SL_Webgoat_Java --tag branch=${{ github.head_ref || steps.extract_branch.outputs.branch }} --vcs-prefix-correction "io/shiftleft=src/main/java/" --java --cpg target/hello-shiftleft-0.0.1.jar
 
+      env:
+        SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
 #Testing vulnerabilities
