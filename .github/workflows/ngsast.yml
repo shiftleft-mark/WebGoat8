@@ -1,34 +1,20 @@
-# This workflow integrates ShiftLeft with GitHub
+# This workflow integrates ShiftLeft NG SAST with GitHub
 # Visit https://docs.shiftleft.io for help
-name: Analyze-with-ShiftLeft
+name: ShiftLeft
 
 on:
   pull_request:
   workflow_dispatch:
-
+  push:
+    # We recommend triggering a scan when merging to your default branch
+    # as a best practice, especially if you'd like to compare the results
+    # of two scans (e.g., a feature branch against the default branch)
+    branches:
+      - main
+      - master
 jobs:
-#javascript scan
-  NextGen-Static-Analysis-Javascript:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Download ShiftLeft cli
-      run: |
-        curl https://cdn.shiftleft.io/download/sl > ${GITHUB_WORKSPACE}/sl && chmod a+rx ${GITHUB_WORKSPACE}/sl
-
-    # ShiftLeft requires Java 1.8. Post the package step override the version
-    - name: Setup Java JDK
-      uses: actions/setup-java@v1.4.3
-      with:
-        java-version: 1.8
-    - name: Analyze
-      run: ${GITHUB_WORKSPACE}/sl analyze --no-diagnostic --force --app SL_Webgoat_JS --tag branch=${GITHUB_REF} --js --cpg .
-      env:
-        SHIFTLEFT_ORG_ID: ${{ secrets.SHIFTLEFT_ORG_ID }}
-        SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
-  #java scan with container
-  NextGen-Static-Analysis-Java:
-    runs-on: ubuntu-latest
+  ngsast-build:
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
 
@@ -38,19 +24,15 @@ jobs:
 
     # ShiftLeft requires Java 1.8
     - name: Set up Java
-    - uses: actions/checkout@v3
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v1.4.3
       with:
-        distribution: 'temurin'
-        java-version: 17
-        architecture: x64
+        java-version: 1.8
 
     - name: Package with Maven
       run: mvn clean package
 
     - name: NextGen Static Analysis
-      run: ${GITHUB_WORKSPACE}/sl analyze --app ShiftLeftJava --tag branch=${{ github.head_ref || steps.extract_branch.outputs.branch }} --vcs-prefix-correction "io/shiftleft=src/main/java/" --java $(pwd)/target/yourJarFileName.jar
+      run: ${GITHUB_WORKSPACE}/sl analyze --app SL_webgoat_java --tag branch=${{ github.head_ref || steps.extract_branch.outputs.branch }} --vcs-prefix-correction "io/shiftleft=src/main/java/" --java $(pwd)/target/yourJarFileName.jar
 
       env:
         SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
