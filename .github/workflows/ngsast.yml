@@ -34,7 +34,7 @@ jobs:
         java-version: '11'
           
     - name: Package with Maven
-      run: mvn -f ../pom.xml clean package
+      run: mvn -f $GITHUB_WORKSPACE/pom.xml clean package
 
     - name: NextGen Static Analysis
       run: ${GITHUB_WORKSPACE}/sl analyze --app SL_webgoat_java --tag branch=${{ github.head_ref || steps.extract_branch.outputs.branch }} --vcs-prefix-correction "io/shiftleft=src/main/java/" --java $(pwd)/target/yourJarFileName.jar
