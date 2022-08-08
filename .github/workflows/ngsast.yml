@@ -23,6 +23,9 @@ jobs:
         curl https://cdn.shiftleft.io/download/sl > ${GITHUB_WORKSPACE}/sl && chmod a+rx ${GITHUB_WORKSPACE}/sl
 
     # ShiftLeft requires Java 1.8
+  ngsast-java: 
+    runs-on: ubuntu-latest  
+    steps:
     - name: Set up Java
       uses: actions/setup-java@v1.4.3
       with:
